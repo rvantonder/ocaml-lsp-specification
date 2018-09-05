@@ -1,0 +1,11 @@
+(library
+ (name language_server_protocol)
+ (public_name language_server_protocol)
+ (preprocess
+  (pps
+   ppx_deriving_yojson))
+ (libraries
+  core
+  yojson
+  ppx_deriving_yojson
+  ppx_deriving_yojson.runtime))

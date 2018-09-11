@@ -12,9 +12,11 @@ let%expect_test "DidCloseTextDocument" =
   in
   DidCloseTextDocument.create ~params
   |> DidCloseTextDocument.to_yojson
+  |> (fun json -> Message.create ~json)
   |> Yojson.Safe.pretty_to_string
   |> print_string;
   [%expect_exact "{
+  \"jsonrpc\": \"2.0\",
   \"method\": \"textDocument/didClose\",
   \"params\": { \"textDocument\": { \"uri\": \"foo.txt\" } }
 }"]

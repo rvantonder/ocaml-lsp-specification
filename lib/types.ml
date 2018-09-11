@@ -43,6 +43,15 @@ module Experimental = Void
     Types for protocol messages. There are three kinds of messages: A Request,
     Response, and a Notification. *)
 
+module Message : sig
+  val create : json:Yojson.Safe.json -> Yojson.Safe.json
+end = struct
+  let create ~json =
+    Yojson.Safe.Util.to_assoc json
+    |> List.cons ("jsonrpc", `String "2.0")
+    |> fun json -> `Assoc json
+end
+
 
 (** {2 Request Message} *)
 

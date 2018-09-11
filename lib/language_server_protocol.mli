@@ -26,3 +26,7 @@ module DidCloseTextDocument : sig
 
   val create : params:DidCloseTextDocumentParams.t -> t
 end
+
+module Message : sig
+  val create : json:Yojson.Safe.json -> Yojson.Safe.json
+end

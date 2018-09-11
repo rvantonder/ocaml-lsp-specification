@@ -15,7 +15,6 @@ let%expect_test "DidCloseTextDocument" =
   |> Yojson.Safe.pretty_to_string
   |> print_string;
   [%expect_exact "{
-  \"jsonrpc\": \"2.0\",
   \"method\": \"textDocument/didClose\",
   \"params\": { \"textDocument\": { \"uri\": \"foo.txt\" } }
 }"]

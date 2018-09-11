@@ -147,7 +147,6 @@ end
 module NotificationMessage = struct
   module type S = sig
     type t = {
-      jsonrpc: string;
       method_: string;
       params: parameters option;
     }
@@ -160,8 +159,6 @@ module NotificationMessage = struct
   module Make (Method : Method) (Parameters : Any) : S
     with type parameters = Parameters.t = struct
     type t = {
-      jsonrpc: string
-          [@key "jsonrpc"];
       method_: string
           [@key "method"];
       params: parameters option
@@ -172,8 +169,7 @@ module NotificationMessage = struct
     [@@deriving yojson]
 
     let create ~params =
-      { jsonrpc = "2.0"
-      ; method_ = "textDocument/didClose"
+      {  method_ = "textDocument/didClose"
       ; params = Some params
       }
   end
@@ -310,6 +306,59 @@ module TextDocumentPositionParams = struct
     textDocument: TextDocumentIdentifier.t;
     position: Position.t;
   }
+  [@@deriving yojson]
+end
+
+
+module CodeActionParams = struct
+
+  module CodeActionKind = struct
+    type t =
+      | QuickFix
+      | Refactor
+      | RefactorExtract
+      | RefactorInline
+      | RefactorRewrite
+      | Source
+      | SourceOrganizeImports
+
+    let to_yojson : t -> Yojson.Safe.json = function
+      | QuickFix -> `String "quickfix"
+      | Refactor -> `String "refactor"
+      | RefactorExtract -> `String "refactor.extract"
+      | RefactorInline -> `String "refactor.inline"
+      | RefactorRewrite -> `String "refactor.rewrite"
+      | Source -> `String "source"
+      | SourceOrganizeImports -> `String "source.organizeImports"
+
+    let of_yojson : Yojson.Safe.json -> (t, string) Result.result = function
+      | `String "quickfix" -> Ok QuickFix
+      | `String "refactor" -> Ok Refactor
+      | `String "refactor.extract" -> Ok RefactorExtract
+      | `String "refactor.inline" -> Ok RefactorInline
+      | `String "refactor.rewrite" -> Ok RefactorRewrite
+      | `String "source" -> Ok Source
+      | `String "source.organizeImports" -> Ok SourceOrganizeImports
+      | _ -> Result.Error "Invalid JSON"
+
+  end
+
+  module CodeActionContext = struct
+    type t =
+      { diagnostics: Diagnostic.t list
+            [@key "diagnostics"]
+      ; only: CodeActionKind.t list option
+            [@key "only"]
+            [@default None]
+      }
+    [@@deriving yojson]
+  end
+
+  type t =
+    { textDocument: TextDocumentIdentifier.t
+    ; range: Range.t
+    ; context: CodeActionContext.t
+    }
   [@@deriving yojson]
 end
 
@@ -830,7 +879,7 @@ module TextDocumentDefinitionRequest = RequestMessage.Make(TextDocumentPositionP
 
 module HoverRequest = RequestMessage.Make(TextDocumentPositionParams)
 
-(** FIXME: DidCloseTextDocumentNotification... notifcations *)
+module CodeActionRequest = RequestMessage.Make(CodeActionParams)
 
 module DidCloseTextDocument =
   NotificationMessage.Make

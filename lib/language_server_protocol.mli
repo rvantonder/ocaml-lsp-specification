@@ -19,8 +19,7 @@ end
 
 module DidCloseTextDocument : sig
   type t =
-    { jsonrpc : string
-    ; method_ : string
+    { method_ : string
     ; params : DidCloseTextDocumentParams.t option
     }
   [@@deriving yojson]

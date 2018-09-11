@@ -44,12 +44,22 @@ module Experimental = Void
     Response, and a Notification. *)
 
 module Message : sig
-  val create : json:Yojson.Safe.json -> Yojson.Safe.json
+  val create : json:Yojson.Safe.json -> string
 end = struct
   let create ~json =
-    Yojson.Safe.Util.to_assoc json
-    |> List.cons ("jsonrpc", `String "2.0")
-    |> fun json -> `Assoc json
+    let json_string =
+      Yojson.Safe.Util.to_assoc json
+      |> List.cons ("jsonrpc", `String "2.0")
+      |> (fun json -> `Assoc json)
+      |> Yojson.Safe.to_string
+    in
+    let length = String.length json_string in
+    Format.sprintf
+      "Content-Length: %d\r\n\
+       \r\n\
+       %s"
+      length
+      json_string
 end
 
 

@@ -28,5 +28,5 @@ module DidCloseTextDocument : sig
 end
 
 module Message : sig
-  val create : json:Yojson.Safe.json -> Yojson.Safe.json
+  val create : json:Yojson.Safe.json -> string
 end

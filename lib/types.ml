@@ -49,20 +49,19 @@ module Experimental = Void
 module RequestMessage = struct
   module type S = sig
     type t = {
-      jsonrpc: string;
       id: int;
       method_: string;
       params: parameters option;
     }
     and parameters
     [@@deriving yojson]
+
+    val create : id:int -> params:parameters -> t
   end
 
-  module Make (AnyParameters: Any): S
-    with type parameters = AnyParameters.t = struct
+  module Make (Method : Method) (Parameters: Any): S
+    with type parameters = Parameters.t = struct
     type t = {
-      jsonrpc: string
-          [@key "jsonrpc"];
       id: int
           [@key "id"];
       method_: string
@@ -71,8 +70,14 @@ module RequestMessage = struct
           [@key "params"]
           [@default None];
     }
-    and parameters = AnyParameters.t
+    and parameters = Parameters.t
     [@@deriving yojson]
+
+    let create ~id ~params =
+      { id
+      ; method_ = Method.name
+      ; params = Some params
+      }
   end
 end
 
@@ -169,7 +174,7 @@ module NotificationMessage = struct
     [@@deriving yojson]
 
     let create ~params =
-      {  method_ = "textDocument/didClose"
+      {  method_ = Method.name
       ; params = Some params
       }
   end
@@ -870,16 +875,26 @@ module InitializeRequest = struct
     [@@deriving yojson]
   end
 
-  include RequestMessage.Make(InitializeParams)
+  include RequestMessage.Make
+      (struct let name = "initialize" end)
+      (InitializeParams)
 end
 
-module ShutdownRequest = RequestMessage.Make(Void)
+module ShutdownRequest = RequestMessage.Make
+    (struct let name = "shutdown" end)
+    (Void)
 
-module TextDocumentDefinitionRequest = RequestMessage.Make(TextDocumentPositionParams)
+module GotoDefinitionRequest = RequestMessage.Make
+    (struct let name = "textDocument/definition" end)
+    (TextDocumentPositionParams)
 
-module HoverRequest = RequestMessage.Make(TextDocumentPositionParams)
+module HoverRequest = RequestMessage.Make
+    (struct let name = "textDocument/hover" end)
+    (TextDocumentPositionParams)
 
-module CodeActionRequest = RequestMessage.Make(CodeActionParams)
+module CodeActionRequest = RequestMessage.Make
+    (struct let name = "textDocument/codeAction" end)
+    (CodeActionParams)
 
 module DidCloseTextDocument =
   NotificationMessage.Make

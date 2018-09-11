@@ -12,18 +12,18 @@ module TextDocumentIdentifier : sig
 end
 
 module DidCloseTextDocumentParams : sig
-  type t = {
-    textDocument: TextDocumentIdentifier.t;
-  }
+  type t =
+    { textDocument: TextDocumentIdentifier.t }
   [@@deriving yojson]
 end
 
 module DidCloseTextDocument : sig
   type t =
-    {
-      jsonrpc : string;
-      method_ : string;
-      params : DidCloseTextDocumentParams.t option;
+    { jsonrpc : string
+    ; method_ : string
+    ; params : DidCloseTextDocumentParams.t option
     }
   [@@deriving yojson]
+
+  val create : params:DidCloseTextDocumentParams.t -> t
 end

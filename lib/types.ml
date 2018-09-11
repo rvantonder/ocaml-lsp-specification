@@ -8,13 +8,17 @@
     It is not complete: we include what we need for diagnostic messages. *)
 
 
-(** The Any module represents serializing and deserializing an OCaml type [t] to a "any" JSON data *)
+(** The Parameters module represents serializing and deserializing an OCaml type
+    [t] to a "any" JSON data used in LSP parameters *)
 module type Any = sig
   type t
   val to_yojson: t -> Yojson.Safe.json
   val of_yojson: Yojson.Safe.json -> (t, string) result
 end
 
+module type Method = sig
+  val name: string
+end
 
 (** The Null module represents a `Null type of Any *)
 module Null : Any = struct
@@ -149,10 +153,12 @@ module NotificationMessage = struct
     }
     and parameters
     [@@deriving yojson]
+
+    val create : params:parameters -> t
   end
 
-  module Make (AnyParameters: Any): S
-    with type parameters = AnyParameters.t = struct
+  module Make (Method : Method) (Parameters : Any) : S
+    with type parameters = Parameters.t = struct
     type t = {
       jsonrpc: string
           [@key "jsonrpc"];
@@ -162,8 +168,14 @@ module NotificationMessage = struct
           [@key "params"]
           [@default None];
     }
-    and parameters = AnyParameters.t
+    and parameters = Parameters.t
     [@@deriving yojson]
+
+    let create ~params =
+      { jsonrpc = "2.0"
+      ; method_ = "textDocument/didClose"
+      ; params = Some params
+      }
   end
 end
 
@@ -820,13 +832,23 @@ module HoverRequest = RequestMessage.Make(TextDocumentPositionParams)
 
 (** FIXME: DidCloseTextDocumentNotification... notifcations *)
 
-module DidCloseTextDocument = NotificationMessage.Make(DidCloseTextDocumentParams)
+module DidCloseTextDocument =
+  NotificationMessage.Make
+    (struct let name = "textDocument/didClose" end)
+    (DidCloseTextDocumentParams)
 
-module DidSaveTextDocument = NotificationMessage.Make(DidSaveTextDocumentParams)
+module DidSaveTextDocument =
+  NotificationMessage.Make
+    (struct let name = "textDocument/didSave" end)
+    (DidSaveTextDocumentParams)
 
-module DidOpenTextDocument = NotificationMessage.Make(DidOpenTextDocumentParams)
+module DidOpenTextDocument = NotificationMessage.Make
+    (struct let name = "textDocument/didOpen" end)
+    (DidOpenTextDocumentParams)
 
-module ShowMessage = NotificationMessage.Make(ShowMessageParams)
+module ShowMessage = NotificationMessage.Make
+    (struct let name = "window/showMessage" end)
+    (ShowMessageParams)
 
 (** {2 Responses} *)
 
@@ -898,7 +920,10 @@ module PublishDiagnosticsParams = struct
   [@@deriving yojson]
 end
 
-module PublishDiagnostics = NotificationMessage.Make(PublishDiagnosticsParams)
+module PublishDiagnostics =
+  NotificationMessage.Make
+    (struct let name = "textDocument/publishDiagnostics" end)
+    (PublishDiagnosticsParams)
 
 (** {3 DidChangeTextDocument Notification} *)
 module DidChangeTextDocumentParams = struct
@@ -922,7 +947,10 @@ module DidChangeTextDocumentParams = struct
   [@@deriving yojson]
 end
 
-module DidChangeTextDocument = NotificationMessage.Make(DidChangeTextDocumentParams)
+module DidChangeTextDocument =
+  NotificationMessage.Make
+    (struct let name = "textDocument/didChange" end)
+    (DidChangeTextDocumentParams)
 
 
 (** Namespaces *)

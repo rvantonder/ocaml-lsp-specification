@@ -1,0 +1,6 @@
+(library
+ (name expect_tests)
+ (modules expect_tests)
+ (inline_tests)
+ (preprocess (pps ppx_expect ppx_sexp_message))
+ (libraries core language_server_protocol))

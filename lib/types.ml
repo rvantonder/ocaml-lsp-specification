@@ -759,8 +759,6 @@ end
 module InitializeRequest = struct
 
   module InitializeParams = struct
-    (* A None type module is used for the experimental Any type possible in
-       ClientCapabilities *)
     module ClientCapabilities = ClientCapabilities.Make(Experimental)
 
     module TraceSetting = struct
@@ -891,12 +889,12 @@ end
 
 (** {3 PublishDiagnostics Notification} *)
 module PublishDiagnosticsParams = struct
-  type t = {
-    uri: DocumentUri.t
-        [@key "uri"];
-    diagnostics: Diagnostic.t list
-        [@key "diagnostics"];
-  }
+  type t =
+    { uri: DocumentUri.t
+          [@key "uri"]
+    ; diagnostics: Diagnostic.t list
+          [@key "diagnostics"]
+    }
   [@@deriving yojson]
 end
 
@@ -905,16 +903,17 @@ module PublishDiagnostics = NotificationMessage.Make(PublishDiagnosticsParams)
 (** {3 DidChangeTextDocument Notification} *)
 module DidChangeTextDocumentParams = struct
   module TextDocumentContentChangeEvent = struct
-    type t = {
-      range: Range.t;
-      range_length: int option
-          [@key "rangeLength"]
-          [@default None];
-      text: string;
-    }
+    type t =
+      { range: Range.t
+            [@key "range"]
+      ; range_length: int option
+            [@key "rangeLength"]
+            [@default None]
+      ; text: string
+            [@key "text"]
+      }
     [@@deriving yojson]
   end
-
 
   type t = {
     textDocument: VersionedTextDocumentIdentifier.t;

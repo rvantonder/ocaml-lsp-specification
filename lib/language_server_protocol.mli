@@ -4,10 +4,10 @@ module DocumentUri : sig
 end
 
 module TextDocumentIdentifier : sig
-  type t = {
-    uri: DocumentUri.t;
-    version: int option [@default None];
-  }
+  type t =
+    { uri: DocumentUri.t
+    ; version: int option [@default None]
+    }
   [@@deriving yojson]
 end
 

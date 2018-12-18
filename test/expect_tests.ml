@@ -31,7 +31,7 @@ let%expect_test "DidCloseTextDocument" =
   |> DidCloseTextDocument.to_yojson
   |> Yojson.Safe.pretty_to_string
   |> print_string;
-  [%expect_exact "{
-  \"method\": \"textDocument/didClose\",
-  \"params\": { \"textDocument\": { \"uri\": \"foo.txt\" } }
-}"]
+  [%expect_exact {|{
+  "method": "textDocument/didClose",
+  "params": { "textDocument": { "uri": "foo.txt" } }
+}|}]

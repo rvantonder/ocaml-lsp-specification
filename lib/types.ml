@@ -981,6 +981,20 @@ end
 
 (** {2 Notifications} *)
 
+(** {3 Initialized Notification} *)
+module InitializedParams = struct
+  type t =
+    { empty: unit
+        [@default ()]
+    }
+      [@@deriving yojson]
+end
+
+module InitializedNotification =
+  NotificationMessage.Make
+    (struct let name = "initialized" end)
+    (InitializedParams)
+
 (** {3 PublishDiagnostics Notification} *)
 module PublishDiagnosticsParams = struct
   type t =

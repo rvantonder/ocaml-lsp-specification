@@ -35,3 +35,19 @@ let%expect_test "DidCloseTextDocument" =
   "method": "textDocument/didClose",
   "params": { "textDocument": { "uri": "foo.txt" } }
 }|}]
+
+let%expect_test "InitializedNotification" =
+  InitializedNotification.create ~params:{ empty = () }
+  |> InitializedNotification.to_yojson
+  |> (fun json -> Message.create ~json)
+  |> print_string;
+  [%expect_exact "Content-Length: 52\r
+\r
+{\"jsonrpc\":\"2.0\",\"method\":\"initialized\",\"params\":{}}"]
+
+let%expect_test "InitializedNotification" =
+  InitializedNotification.create ~params:{ empty = () }
+  |> InitializedNotification.to_yojson
+  |> Yojson.Safe.pretty_to_string
+  |> print_string;
+  [%expect_exact {|{ "method": "initialized", "params": {} }|}]

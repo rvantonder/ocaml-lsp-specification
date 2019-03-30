@@ -37,7 +37,7 @@ let%expect_test "DidCloseTextDocument" =
 }|}]
 
 let%expect_test "InitializedNotification" =
-  InitializedNotification.create ~params:{ empty = () }
+  InitializedNotification.create ~params:()
   |> InitializedNotification.to_yojson
   |> (fun json -> Message.create ~json)
   |> print_string;
@@ -46,7 +46,7 @@ let%expect_test "InitializedNotification" =
 {\"jsonrpc\":\"2.0\",\"method\":\"initialized\",\"params\":{}}"]
 
 let%expect_test "InitializedNotification" =
-  InitializedNotification.create ~params:{ empty = () }
+  InitializedNotification.create ~params:()
   |> InitializedNotification.to_yojson
   |> Yojson.Safe.pretty_to_string
   |> print_string;

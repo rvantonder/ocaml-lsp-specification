@@ -19,7 +19,7 @@ module type Method = sig
 end
 
 (** The Null module represents a `Null type of Any *)
-module Null : Any = struct
+module Null = struct
   type t = unit
   let to_yojson _ = `Null
   let of_yojson = function
@@ -27,9 +27,15 @@ module Null : Any = struct
     | json -> Error (Format.asprintf "Invalid JSON %s" (Yojson.Safe.to_string json))
 end
 
-module Void : Any = struct
+module Void = struct
   type t = unit
   let to_yojson _ = `Null
+  let of_yojson _ = Ok ()
+end
+
+module Empty = struct
+  type t = unit
+  let to_yojson _ = `Assoc []
   let of_yojson _ = Ok ()
 end
 
@@ -892,6 +898,11 @@ module ShutdownRequest = RequestMessage.Make
     (struct let name = "shutdown" end)
     (Void)
 
+module ExitNotification =
+  NotificationMessage.Make
+    (struct let name = "exit" end)
+    (Void)
+
 module GotoDefinitionRequest = RequestMessage.Make
     (struct let name = "textDocument/definition" end)
     (TextDocumentPositionParams)
@@ -982,13 +993,7 @@ end
 (** {2 Notifications} *)
 
 (** {3 Initialized Notification} *)
-module InitializedParams = struct
-  type t =
-    { empty: unit
-        [@default ()]
-    }
-      [@@deriving yojson]
-end
+module InitializedParams = Empty
 
 module InitializedNotification =
   NotificationMessage.Make

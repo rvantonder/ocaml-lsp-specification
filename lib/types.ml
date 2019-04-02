@@ -75,9 +75,9 @@ module RequestMessage = struct
       ; params: parameters option
       }
     and parameters
-    [@@deriving yojson]
+  [@@deriving yojson]
 
-    val create : id:int -> params:parameters -> t
+  val create : id:int -> params:parameters -> t
   end
 
   module Make (Method : Method) (Parameters: Any): S
@@ -111,7 +111,7 @@ module ResponseError = struct
       ; data: data option
       }
     and data
-    [@@deriving yojson]
+  [@@deriving yojson]
   end
 
   module Make (AnyData: Any): S with type data = AnyData.t = struct
@@ -142,7 +142,7 @@ module ResponseMessage = struct
       }
     and result
     and error
-    [@@deriving yojson]
+  [@@deriving yojson]
   end
 
   (** A response message is parameterized by a result which can be [Any] option,
@@ -177,9 +177,9 @@ module NotificationMessage = struct
       ; params: parameters option
       }
     and parameters
-    [@@deriving yojson]
+  [@@deriving yojson]
 
-    val create : params:parameters -> t
+  val create : params:parameters -> t
   end
 
   module Make (Method : Method) (Parameters : Any) : S
@@ -567,7 +567,7 @@ module ServerCapabilities = struct
       ; experimental: experimental option
       }
     and experimental
-    [@@deriving yojson]
+  [@@deriving yojson]
   end
 
   module Make (AnyExperimental: Any): S
@@ -809,7 +809,7 @@ module ClientCapabilities = struct
       ; window: WindowClientCapabilities.t option
       }
     and experimental
-    [@@deriving yojson]
+  [@@deriving yojson]
   end
 
   module Make (AnyExperimental: Any): S
@@ -1003,7 +1003,7 @@ module MarkedString = struct
     { language: string
     ; value: string
     }
-    [@@deriving yojson]
+  [@@deriving yojson]
 
   type t =
     | String of string
@@ -1016,9 +1016,9 @@ module MarkedString = struct
   let of_yojson = function
     | `String value -> Ok (String value)
     | code_block ->
-       match code_block_of_yojson code_block with
-       | Ok code_block -> Ok (CodeBlock code_block)
-       | Error error -> Error error
+      match code_block_of_yojson code_block with
+      | Ok code_block -> Ok (CodeBlock code_block)
+      | Error error -> Error error
 end
 
 module HoverResponse = struct
@@ -1030,32 +1030,32 @@ module HoverResponse = struct
 
     let to_yojson = function
       | MarkedString marked_string ->
-         MarkedString.to_yojson marked_string
+        MarkedString.to_yojson marked_string
       | MarkedStringList marked_string_list ->
-         `List (List.map MarkedString.to_yojson marked_string_list)
+        `List (List.map MarkedString.to_yojson marked_string_list)
       | MarkupContent marked_content ->
-         MarkupContent.to_yojson marked_content
+        MarkupContent.to_yojson marked_content
 
     let of_yojson : Yojson.Safe.json -> (t, string) result = function
       | `String value ->
-         begin match MarkedString.of_yojson (`String value) with
-         | Ok value -> Ok (MarkedString value)
-         | Error error -> Error error
-         end
+        begin match MarkedString.of_yojson (`String value) with
+          | Ok value -> Ok (MarkedString value)
+          | Error error -> Error error
+        end
       | `List values ->
-         let values =
-           List.fold_right (fun json acc ->
-               match MarkedString.of_yojson json with
-               | Ok value -> value :: acc
-               | Error _ -> acc
-             ) values []
-         in
-         Ok (MarkedStringList values)
+        let values =
+          List.fold_right (fun json acc ->
+              match MarkedString.of_yojson json with
+              | Ok value -> value :: acc
+              | Error _ -> acc
+            ) values []
+        in
+        Ok (MarkedStringList values)
       | `Assoc markup_content ->
-         begin match MarkupContent.of_yojson (`Assoc markup_content) with
-         | Ok value -> Ok (MarkupContent value)
-         | Error error -> Error error
-         end
+        begin match MarkupContent.of_yojson (`Assoc markup_content) with
+          | Ok value -> Ok (MarkupContent value)
+          | Error error -> Error error
+        end
       | _ -> Error "Invalid Hover Response Content"
   end
 

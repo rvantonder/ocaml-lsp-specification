@@ -975,12 +975,95 @@ module TextDocumentDefinitionResponse = struct
 end
 
 
-module HoverResponse = struct
-  module HoverResult = struct
-    type t = {
-      contents: string;
-      range: Range.t option;
+module MarkupKind = struct
+  type t =
+    | Plaintext
+    | Markdown
+
+  let to_yojson = function
+    | Plaintext -> `String "plaintext"
+    | Markdown -> `String "markdown"
+
+  let of_yojson = function
+    | `String "plaintext" -> Ok Plaintext
+    | `String "markdown" -> Ok Markdown
+    | `String _ -> Ok Plaintext
+    | _ -> Error "invalid contentFormat"
+end
+
+module MarkupContent = struct
+  type t = {
+    value: string;
+    kind: MarkupKind.t;
+  } [@@deriving yojson { strict = false }]
+end
+
+module MarkedString = struct
+  type code_block =
+    { language: string
+    ; value: string
     }
+    [@@deriving yojson]
+
+  type t =
+    | String of string
+    | CodeBlock of code_block
+
+  let to_yojson = function
+    | String value -> `String value
+    | CodeBlock code_block -> code_block_to_yojson code_block
+
+  let of_yojson = function
+    | `String value -> Ok (String value)
+    | code_block ->
+       match code_block_of_yojson code_block with
+       | Ok code_block -> Ok (CodeBlock code_block)
+       | Error error -> Error error
+end
+
+module HoverResponse = struct
+  module Contents = struct
+    type t =
+      | MarkedString of MarkedString.t
+      | MarkedStringList of MarkedString.t list
+      | MarkupContent of MarkupContent.t
+
+    let to_yojson = function
+      | MarkedString marked_string ->
+         MarkedString.to_yojson marked_string
+      | MarkedStringList marked_string_list ->
+         `List (List.map MarkedString.to_yojson marked_string_list)
+      | MarkupContent marked_content ->
+         MarkupContent.to_yojson marked_content
+
+    let of_yojson : Yojson.Safe.json -> (t, string) result = function
+      | `String value ->
+         begin match MarkedString.of_yojson (`String value) with
+         | Ok value -> Ok (MarkedString value)
+         | Error error -> Error error
+         end
+      | `List values ->
+         let values =
+           List.fold_right (fun json acc ->
+               match MarkedString.of_yojson json with
+               | Ok value -> value :: acc
+               | Error _ -> acc
+             ) values []
+         in
+         Ok (MarkedStringList values)
+      | `Assoc markup_content ->
+         begin match MarkupContent.of_yojson (`Assoc markup_content) with
+         | Ok value -> Ok (MarkupContent value)
+         | Error error -> Error error
+         end
+      | _ -> Error "Invalid Hover Response Content"
+  end
+
+  module HoverResult = struct
+    type t =
+      { contents: Contents.t
+      ; range: Range.t option
+      }
     [@@deriving yojson]
   end
 

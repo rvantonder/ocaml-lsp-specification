@@ -1062,7 +1062,7 @@ module HoverResponse = struct
   module HoverResult = struct
     type t =
       { contents: Contents.t
-      ; range: Range.t option
+      ; range: Range.t option [@default None]
       }
     [@@deriving yojson]
   end
